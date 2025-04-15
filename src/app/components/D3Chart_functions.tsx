@@ -1,8 +1,6 @@
 import * as d3 from "d3";
 import {AllCircleData, ChartData, CircleData, CircleLabelData, PrisonLine, Region} from "@/app/components/D3Chart_types";
 import {COLORS} from "@/app/components/D3Chart";
-import React from "react";
-import {max} from "d3";
 
 const getPie = (degrees: number[], sortOrder: "ascending" | "descending") => {
     const pieConvert = degrees
@@ -116,7 +114,7 @@ export const getPercentageArcData = (pieData:  d3.PieArcDatum<CircleData>[], arc
     // arcs required for scale
     const percentageArcs = Array.from({ length: 11}).map((m,i) => i/10);
 
-    return percentageArcs.reduce((acc, entry, i) => {
+    return percentageArcs.reduce((acc, entry) => {
 
         const radius = arcScale(entry) || 0;
 
@@ -229,7 +227,7 @@ export const getPrisonLines = (prison: ChartData, prisonAngle: number, prisonSli
     return lines.reverse();
 }
 
-export const drawLegend = (legendGroup: d3.Selection<d3.BaseType,unknown,null,undefined>, prisonCircleScale: d3.ScalePower<number, number, never>) => {
+export const drawLegend = (legendGroup: d3.Selection<d3.BaseType,unknown,HTMLElement | null,undefined>, prisonCircleScale: d3.ScalePower<number, number, never>) => {
 
     legendGroup.select(".legendTitle")
         .attr("font-size", 12)
@@ -419,18 +417,17 @@ export const drawLegend = (legendGroup: d3.Selection<d3.BaseType,unknown,null,un
         .text((d) => d.title)
 
 }
-export const wrap = (text: d3.Selection<SVGTextElement, unknown, null, undefined>, wrapWidth: number): void => {
+export const wrap = (text: d3.Selection<SVGTextElement, unknown, HTMLElement | null, never>, wrapWidth: number): void => {
     text.each(function (this: SVGTextElement) {
-        const currentText = this; // 'this' is the current SVGTextElement
-        d3.select(currentText).selectAll("tspan").remove();
-        let words = d3.select(currentText).text().split(/\s+/).reverse();
+        d3.select(this).selectAll("tspan").remove();
+        const words = d3.select(this).text().split(/\s+/).reverse();
         let word = "";
         let line: string[] = [];
         let lineNumber = 0;
-        let lineHeight = 1.1;
-        let y = 0;
-        let dy =  0;
-        let tspan = d3.select(currentText)
+        const lineHeight = 1.1;
+        const y = 0;
+        const dy =  0;
+        let tspan = d3.select(this)
             .text(null)
             .append("tspan")
             .attr("x", 0)
@@ -444,7 +441,7 @@ export const wrap = (text: d3.Selection<SVGTextElement, unknown, null, undefined
                 line.pop();
                 tspan.text(line.join(" "));
                 line = [word];
-                tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                tspan = d3.select(this).append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
             }
         }
     });

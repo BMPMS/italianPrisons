@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { Figtree, Merriweather} from "next/font/google";
+import { Figtree} from "next/font/google";
 import "./globals.css";
 
 const figTree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
-});
-
-const merriWeather = Merriweather({
-    variable: "--font-merriweather",
-    subsets: ["latin"],
-    weight: "400"
 });
 
 

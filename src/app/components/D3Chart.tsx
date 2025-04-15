@@ -21,7 +21,8 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
 
     useEffect(() => {
         // svgs and sizing
-        const svg: d3.Selection<any, unknown, null, undefined> = d3.select(ref.current);
+        if (!ref.current) return;
+        const svg = d3.select<SVGSVGElement, unknown>(ref.current);
         const svgNode = svg.node();
         if (!svgNode) return;
 
@@ -89,12 +90,12 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
                 .outerRadius(circleRadius - scaleHeight - arcWidth + 2.5);
 
             // cheating for start due to overlays
-            const minStartAngle = pieClass === "top" ? 0.19 : d3.min(pieData, (d) => d.startAngle);
+            const minStartAngle = pieClass === "top" ? 0.19 : d3.min(pieData, (d) => d.startAngle) || 0;
 
             svg.select(`.${pieClass}StartRegionLine`)
                 .attr("stroke", "white")
                 .attr("transform",`translate(${transformX },${transformY})`)
-                .attr("d",(d) => regionLineArc({startAngle: minStartAngle, endAngle: minStartAngle}))
+                .attr("d",regionLineArc({startAngle: minStartAngle, endAngle: minStartAngle}))
 
 
             // overall circle pie group join
@@ -133,7 +134,7 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
                 .text((d) => d3.sum(d.data.data, (s) => s.suicides) === 0 ? "" : d3.sum(d.data.data, (s) => s.suicides));
 
 
-            d3.selectAll(".prisonCircleItem")
+            d3.selectAll<SVGCircleElement | SVGTextElement,d3.PieArcDatum<CircleData>>(".prisonCircleItem")
                 .attr("transform", (d) => {
                     const circleAngle = d.startAngle + (d.endAngle - d.startAngle)/2;
                     const circleArc =  d3.arc<{startAngle: number, endAngle: number}>()
@@ -192,7 +193,7 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
                 .attr("stroke", (d) => d.fill)
                 .attr("stroke-width",0.5)
                 .attr("fill","none")
-                .attr("d", (d,i) => d.path );
+                .attr("d", (d) => d.path );
 
             // percentage arc label join (note: group is above scale + background rect)
             const percentageArcLabelGroup = svg.select(".scaleLabelGroup")
@@ -268,7 +269,10 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
                 .selectAll<SVGGElement, {path: string, stroke: string}[]>(`.policeStaffArcs${pieClass}`)
                 .data((d) => {
                     const arcData = policeStaffArcs.slice(0, policeStaffThreshold(d.data.differenceInPoliceNumbers));
-                    const arcChartData = arcData.map((m: any) => m = {path: m, stroke: d.stroke})
+                    const arcChartData = arcData.reduce((acc, entry) => {
+                        acc.push({path: entry, stroke: d.stroke})
+                        return acc;
+                    }, [] as {path: string, stroke: string}[])
                     return arcChartData
                 })
                 .join((group) => {
@@ -300,7 +304,7 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
 
        drawLegend(legendGroup, prisonCircleScale)
 
-    }, [containerClass, chartData]);
+    }, [containerClass, chartData, regionData]);
 
     return (
         <svg ref={ref}>

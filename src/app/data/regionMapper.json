@@ -1,0 +1,102 @@
+[{
+  "region": "Friuli Venezia Giulia",
+  "shortName": "Friuli",
+  "northToSouthOrder": 0,
+  "circle": "top"
+},{
+  "region": "Trentino",
+  "shortName": "Trentino",
+  "northToSouthOrder": 1,
+  "circle": "top"
+},{
+  "region": "Veneto",
+  "shortName": "Veneto",
+  "northToSouthOrder": 2,
+  "circle": "top"
+},{
+  "region": "Lombardia",
+  "shortName": "Lombardia",
+  "northToSouthOrder": 3,
+  "circle": "top"
+},{
+  "region": "Piemonte",
+  "shortName": "Piemonte",
+  "northToSouthOrder": 4,
+  "circle": "top"
+},{
+  "region": "Valle d'Aosta",
+  "shortName": "VDA",
+  "northToSouthOrder": 5,
+  "circle": "top"
+},{
+  "region": "Liguria",
+  "shortName": "Liguria",
+  "northToSouthOrder": 6,
+  "circle": "top"
+},{
+  "region": "Emilia Romagna",
+  "shortName": "Emilia Romagna",
+  "northToSouthOrder": 7,
+  "circle": "top"
+},{
+  "region": "Toscana",
+  "shortName": "Toscana",
+  "northToSouthOrder": 8,
+  "circle": "top"
+},{
+  "region": "Umbria",
+  "shortName": "Umbria",
+  "northToSouthOrder": 9,
+  "circle": "top"
+},{
+  "region": "Marche",
+  "shortName": "Marche",
+  "northToSouthOrder": 10,
+  "circle": "top"
+},{
+  "region": "Lazio",
+  "shortName": "Lazio",
+  "northToSouthOrder": 11,
+  "circle": "bottom"
+},{
+  "region": "Abruzzo",
+  "shortName": "Abruzzo",
+  "northToSouthOrder": 12,
+  "circle": "bottom"
+},{
+  "region": "Molise",
+  "shortName": "Molise",
+  "northToSouthOrder": 13,
+  "circle": "bottom"
+},{
+  "region": "Campania",
+  "shortName": "Campania",
+  "northToSouthOrder": 14,
+  "circle": "bottom"
+},{
+  "region": "Puglia",
+  "shortName": "Puglia",
+  "northToSouthOrder": 15,
+  "circle": "bottom"
+},{
+  "region": "Basìlicata",
+  "shortName": "Basìlicata",
+  "northToSouthOrder": 16,
+  "circle": "bottom"
+},{
+  "region": "Calabria",
+  "shortName": "Calabria",
+  "northToSouthOrder": 17,
+  "circle": "bottom"
+},{
+  "region": "sìcilia",
+  "shortName": "Sìcilia",
+  "northToSouthOrder": 18,
+  "circle": "bottom"
+},{
+  "region": "Sardegna",
+  "shortName": "Sardegna",
+  "northToSouthOrder": 19,
+  "circle": "bottom"
+}
+]

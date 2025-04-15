@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #24242e;
+  --foreground: #f1f0ff;
+  --font-figtree: 'Figtree', sans-serif;
+  --font-merriweather: 'Merriweather', serif;
+}
+
+/* Hide the Next.js development badge */
+#__next > div > div > div > div > div {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+.chartTitle {
+  font-family: var(--font-merriweather), sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.d3ChartContainer {
+  position: relative;
+}
+.floatingDiv{
+  position: fixed;
+  z-index: 200;
+  top: 0px;
+  left: 0px;
+  text-align: left;
+  border: 0px solid lightgrey;
+  padding: 10px;
+  font: 14px sans-serif;
+  background: transparent;
+  color: white;
+  width: 20%;
+  height: auto;
+}

@@ -19,7 +19,7 @@
   }
 }
 
-.chartTitle {
+.chartTitle, .legendTitle {
   font-family: var(--font-merriweather), sans-serif;
 }
 

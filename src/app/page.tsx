@@ -1,8 +1,10 @@
 import D3Chart from "@/app/components/D3Chart";
 import chartData from "@/app/data/chartData.json";
 import regionMapper from "@/app/data/regionMapper.json"
+import {Region} from "@/app/components/D3Chart_types";
 export default function Home() {
 
+    const regionData = regionMapper as Region[];
 
   return (
       <>
@@ -11,7 +13,7 @@ export default function Home() {
                  <D3Chart
                   containerClass={"d3Chart"}
                   chartData={chartData}
-                  regionData={regionMapper}
+                  regionData={regionData}
               />
           </div>
       </>

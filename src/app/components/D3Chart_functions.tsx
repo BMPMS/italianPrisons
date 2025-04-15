@@ -1,6 +1,8 @@
 import * as d3 from "d3";
-import {AllCircleData, ChartData, CircleData, PrisonLine, Region} from "@/app/components/D3Chart_types";
+import {AllCircleData, ChartData, CircleData, CircleLabelData, PrisonLine, Region} from "@/app/components/D3Chart_types";
 import {COLORS} from "@/app/components/D3Chart";
+import React from "react";
+import {max} from "d3";
 
 const getPie = (degrees: number[], sortOrder: "ascending" | "descending") => {
     const pieConvert = degrees
@@ -58,8 +60,8 @@ export const formatData = (chartData: ChartData[], regionData: Region[]) => {
 
     const pieTopData = getPie(topCircleDegrees,"ascending")(circleData.top);
     const pieBottomData = getPie(bottomCircleDegrees,"descending")(circleData.bottom);
-
-    return {pieTopData,pieBottomData};
+    const maxPrisons = d3.max(Array.from(dataByRegion), (d) => d[1].length);
+    return {pieTopData,pieBottomData, maxPrisons};
 }
 
 
@@ -227,9 +229,199 @@ export const getPrisonLines = (prison: ChartData, prisonAngle: number, prisonSli
     return lines.reverse();
 }
 
-export const wrap = (text: d3.Selection<d3.BaseType, unknown, null, undefined>, wrapWidth: number): void => {
-    text.each(function (this: d3.BaseType) {
-        const currentText = this as SVGTextElement; // 'this' is the current SVGTextElement
+export const drawLegend = (legendGroup: d3.Selection<d3.BaseType,unknown,null,undefined>, prisonCircleScale: d3.ScalePower<number, number, never>) => {
+
+    legendGroup.select(".legendTitle")
+        .attr("font-size", 12)
+        .attr("fill","white")
+        .text("How to read");
+
+    const {0: minRadius, 1: maxRadius} = prisonCircleScale.domain();
+    const circleData = [1,5,maxRadius];
+
+    const legendCircleGroup = legendGroup.select(".circlesGroup")
+        .selectAll<SVGGElement, number[]>(".legendCircleGroup")
+        .data(circleData)
+        .join((group) => {
+            const enter = group.append("g").attr("class", "legendCircleGroup");
+            enter.append("circle").attr("class", "legendCircle");
+            enter.append("text").attr("class", "legendCircleLabel");
+            return enter;
+        });
+
+    legendCircleGroup.attr("transform",`translate(${1 + prisonCircleScale(maxRadius)},${15})`);
+
+    legendCircleGroup.select(".legendCircle")
+        .attr("r", (d) => prisonCircleScale(d))
+        .attr("fill", "transparent")
+        .attr("stroke", "white")
+        .attr("stroke-width",0.5)
+        .attr("cy", (d) => (prisonCircleScale(maxRadius) * 2) - prisonCircleScale(d))
+
+    legendCircleGroup.select(".legendCircleLabel")
+        .attr("text-anchor", "middle")
+        .attr("fill","white")
+        .attr("font-size", 4)
+        .attr("y", (d) => -1 + (prisonCircleScale(maxRadius) * 2) - (prisonCircleScale(d) * 2))
+        .text((d) => d)
+
+    const circleLabelData = [
+        {line: true, y: -prisonCircleScale(maxRadius)/2,x0:prisonCircleScale(maxRadius)/2, x1: prisonCircleScale(maxRadius) * 6, fontSize: 6, textAnchor: "left",wrapWidth: 65, dy: -7, label: "Circle dimensions: total number of prisons in the region"},
+        {line: true, y: prisonCircleScale(maxRadius) - prisonCircleScale(minRadius), x0:0, x1: prisonCircleScale(maxRadius) * 2,  fontSize: 6,textAnchor: "left",wrapWidth: 60, dy: -7,label: "Total number of suicides in the region's prisons"},
+        {line: false, y: prisonCircleScale(maxRadius) - prisonCircleScale(minRadius), x0:0, x1: 0,  fontSize: 6,textAnchor: "middle",wrapWidth: 0, dy: 0, label: "X"},
+    ];
+
+    const legendCircleLabelGroup = legendGroup.select(".circleLabelsGroup")
+        .selectAll<SVGGElement, CircleLabelData>(".legendCircleLabelGroup")
+        .data(circleLabelData)
+        .join((group) => {
+            const enter = group.append("g").attr("class", "legendCircleLabelGroup");
+            enter.append("line").attr("class", "legendCircleLabelLine");
+            enter.append("text").attr("class", "legendCircleLabelText");
+            return enter;
+        });
+
+    legendCircleLabelGroup
+        .attr("transform",(d) => `translate(${1 + prisonCircleScale(maxRadius)},${15 + prisonCircleScale(maxRadius) + d.y})`);
+
+    legendCircleLabelGroup.select(".legendCircleLabelLine")
+        .filter((f) => f.line)
+        .attr("x1", (d) => d.x0)
+        .attr("x2", (d) => d.x1 -3 )
+        .attr("stroke", "black")
+        .attr("stroke-width",0.5);
+
+    legendCircleLabelGroup.select(".legendCircleLabelText")
+        .attr("transform", (d) => `translate(${d.x1},${d.dy})`)
+        .attr("fill", "white")
+        .style("font-size",(d) => d.fontSize)
+        .attr("text-anchor", (d) => d.textAnchor)
+        .attr("dominant-baseline","middle")
+        .attr("dy", (d) => d.dy)
+        .text((d) => d.label);
+
+    d3.selectAll<SVGTextElement,CircleLabelData>(".legendCircleLabelText")
+        .filter((f) => f.line)
+        .each((d,i,objects) => {
+            wrap(d3.select(objects[i]), d.wrapWidth)
+        })
+
+    const linesData = [
+        {stroke: COLORS.red, strokeDashArray: "4,4", label: "Prisons with one or more suicides", x: 40, length: 125},
+        {stroke: "white", strokeDashArray: "4,4", label: "Top 30 prisons with attempted suicides", x: 55, length: 80},
+        {stroke: "white", strokeDashArray: "2,2", label: "Top 30 prisons with self-harm cases", x: 45, length: 55},
+        {stroke: "white", strokeDashArray: "", label: "No special cases to mention", x: 25, length: 45}
+    ]
+
+    const linesDataGroup = legendGroup.select(".linesGroup")
+        .selectAll<SVGGElement, {stroke: string, strokeDashArray: string, x: number, length: number}[]>(".linesDataGroup")
+        .data(linesData)
+        .join((group) => {
+            const enter = group.append("g").attr("class", "linesDataGroup");
+            enter.append("text").attr("class", "lineDataLabel");
+            enter.append("line").attr("class", "lineDataLine");
+            return enter;
+        });
+
+    linesDataGroup.attr("transform", (d,i) => `translate(0,${70 + (i * 18)})` )
+
+    linesDataGroup.select(".lineDataLabel")
+        .attr("fill", "white")
+        .style("font-size",6)
+        .attr("dominant-baseline","middle")
+        .text((d) => d.label);
+
+    linesDataGroup.select(".lineDataLine")
+        .attr("stroke", (d) => d.stroke)
+        .attr("stroke-dasharray", (d) => d.strokeDashArray)
+        .attr("stroke-width", 1)
+        .attr("x1", (d) => d.x)
+        .attr("x2", (d) => d.x + d.length)
+        .attr('y1', 7.5)
+        .attr('y2', 7.5)
+
+    d3.selectAll<SVGTextElement,CircleLabelData>(".lineDataLabel")
+        .each((d,i,objects) => {
+            wrap(d3.select(objects[i]), 53)
+        })
+
+    legendGroup.select<SVGTextElement>(".policeTitle")
+        .attr("font-size", 6)
+        .attr("fill","white")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${210},${75})`)
+        .text("Shortage of police staff")
+        .call(wrap, 40);
+
+    const {squarePath, circularArcs} = getPrisonPath();
+
+    legendGroup.select<SVGTextElement>(".policeSquare")
+        .attr("fill","white")
+        .attr("d", squarePath)
+        .attr("transform", `translate(${210},${65})`);
+
+
+    const legendPathsGroup = legendGroup.select(".policePathsGroup")
+        .selectAll<SVGGElement, string[]>(".legendPathsGroup")
+        .data(circularArcs)
+        .join((group) => {
+            const enter = group.append("g").attr("class", "legendPathsGroup");
+            enter.append("path").attr("class", "policeStaffCurve");
+            return enter;
+        });
+
+    legendPathsGroup.attr("transform", `translate(${210},${65})`)
+
+    legendPathsGroup.select(".policeStaffCurve")
+        .attr("d", (d) => d)
+        .attr("fill","white")
+
+    const policeLines = [
+        {path: `M-7,0L-15,0L-15,-15`, x: -15,title: "Low", label: "<15 ppl"},
+        {path: `M0,-6L0,-35`, x: 0,title:  "Medium", label: "16-30ppl"},
+        {path: `M7,0L15,0L15,-15`, x: 15,title: "High", label: "31> ppl"}
+    ]
+
+    const legendPoliceLinesGroup = legendGroup.select(".policeLinesGroup")
+        .selectAll<SVGGElement, {path: string, title: string, x: number,label: string}[]>(".legendPoliceLinesGroup")
+        .data(policeLines)
+        .join((group) => {
+            const enter = group.append("g").attr("class", "legendPoliceLinesGroup");
+            enter.append("text").attr("class", "policeLineLabelValue");
+            enter.append("text").attr("class", "policeLineLabelTitle");
+            enter.append("path").attr("class", "policeLinePath");
+            return enter;
+        });
+
+    legendPoliceLinesGroup.attr("transform", `translate(${210},${65})`);
+
+    legendPoliceLinesGroup.select(".policeLinePath")
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width",0.75)
+        .attr("d" ,(d) => d.path)
+
+    legendPoliceLinesGroup.select(".policeLineLabelValue")
+        .attr("fill", "white")
+        .attr("font-size", 6)
+        .attr("text-anchor", "middle")
+        .attr("x", (d) => d.x)
+        .attr("y" ,(d) => -18 - (d.x === 0 ? 20 : 0))
+        .text((d) => d.label)
+
+    legendPoliceLinesGroup.select(".policeLineLabelTitle")
+        .attr("fill", "white")
+        .attr("font-size", 6)
+        .attr("text-anchor", "middle")
+        .attr("text-decoration","underline")
+        .attr("x", (d) => d.x)
+        .attr("y" ,(d) => -26 - (d.x === 0 ? 20 : 0))
+        .text((d) => d.title)
+
+}
+export const wrap = (text: d3.Selection<SVGTextElement, unknown, null, undefined>, wrapWidth: number): void => {
+    text.each(function (this: SVGTextElement) {
+        const currentText = this; // 'this' is the current SVGTextElement
         d3.select(currentText).selectAll("tspan").remove();
         let words = d3.select(currentText).text().split(/\s+/).reverse();
         let word = "";
@@ -237,7 +429,7 @@ export const wrap = (text: d3.Selection<d3.BaseType, unknown, null, undefined>, 
         let lineNumber = 0;
         let lineHeight = 1.1;
         let y = 0;
-        let dy = 0;
+        let dy =  0;
         let tspan = d3.select(currentText)
             .text(null)
             .append("tspan")

@@ -50,3 +50,15 @@ export type PrisonLine = {
 
     showSquare: boolean;
 }
+
+export type CircleLabelData = {
+    line: boolean;
+    y: number;
+    x0: number;
+    x1: number;
+    fontSize: number;
+    textAnchor: string;
+    wrapWidth: number;
+    dy: number;
+    label: string;
+}

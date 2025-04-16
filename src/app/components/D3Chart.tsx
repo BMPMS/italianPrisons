@@ -30,7 +30,7 @@ const D3Chart: FC<D3ChartProps> = ({ containerClass,chartData, regionData }) => 
         if (!containerNode) return;
         const {  clientHeight } = containerNode;
         const svgHeight: number = clientHeight;
-        // maintain proportions from static viz
+        // maintain proportions from notReallyStatic viz
         const svgWidth = svgHeight/1.4;
         const height = 1000;
         const width = height/1.4;
